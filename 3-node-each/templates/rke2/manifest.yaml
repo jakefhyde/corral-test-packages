@@ -1,0 +1,47 @@
+name: rke2
+description: >
+  A 3 node rke2 cluster.
+variables:
+  kubernetes_version:
+    type: string
+  kubeconfig:
+    type: string
+    readOnly: true
+    description: "Kubeconfig for the cluster encoded as a base64 string."
+commands:
+  - command: "/opt/corral/rke2/init-etcd.sh"
+    node_pools:
+      - etcd
+  - command: "/opt/corral/rke2/init-controlplane.sh"
+    node_pools:
+      - controlplane
+  - command: "/opt/corral/rke2/init-worker.sh"
+    node_pools:
+      - worker
+  - command: "/opt/corral/rke2/secrets_encrypt.sh rke2 rke2-server prepare prepare"
+    node_pools:
+      - encryption_leader
+  - command: "/opt/corral/rke2/restart_node.sh rke2-server"
+    node_pools:
+      - etcd
+  - command: "/opt/corral/rke2/restart_node.sh rke2-server"
+    node_pools:
+      - controlplane
+  - command: "/opt/corral/rke2/secrets_encrypt.sh rke2 rke2-server rotate rotate"
+    node_pools:
+      - encryption_leader
+  - command: "/opt/corral/rke2/restart_node.sh rke2-server"
+    node_pools:
+      - etcd
+  - command: "/opt/corral/rke2/restart_node.sh rke2-server"
+    node_pools:
+      - controlplane
+  - command: "/opt/corral/rke2/secrets_encrypt.sh rke2 rke2-server reencrypt reencrypt_finished"
+    node_pools:
+      - encryption_leader
+  - command: "/opt/corral/rke2/restart_node.sh rke2-server"
+    node_pools:
+      - etcd
+  - command: "/opt/corral/rke2/restart_node.sh rke2-server"
+    node_pools:
+      - controlplane

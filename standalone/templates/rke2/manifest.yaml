@@ -1,0 +1,29 @@
+name: rke2
+description: >
+  A single node rke2 cluster.
+variables:
+  kubernetes_version:
+    type: string
+  kubeconfig:
+    type: string
+    readOnly: true
+    description: "Kubeconfig for the cluster encoded as a base64 string."
+commands:
+  - command: "/opt/corral/rke2/init-cluster.sh"
+    node_pools:
+      - bastion
+  - command: "/opt/corral/rke2/init-server.sh"
+    node_pools:
+      - server
+  - command: "/opt/corral/rke2/init-agent.sh"
+    node_pools:
+      - agent
+  - command: "/opt/corral/rke2/secrets_encrypt.sh rke2 rke2-server prepare prepare"
+    node_pools:
+      - bastion
+  - command: "/opt/corral/rke2/secrets_encrypt.sh rke2 rke2-server rotate rotate"
+    node_pools:
+      - bastion
+  - command: "/opt/corral/rke2/secrets_encrypt.sh rke2 rke2-server reencrypt reencrypt_finished"
+    node_pools:
+      - bastion

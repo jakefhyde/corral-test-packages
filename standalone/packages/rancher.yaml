@@ -1,0 +1,15 @@
+manifest:
+  name: encryption-key-rotation
+  description: |
+   Repro setup for encryption key rotation bugs
+  variables:
+    server_count:
+      default: 1
+templates:
+  - digitalocean/cluster_nodes
+  - rke2
+variables:
+  image:
+    - ubuntu-20-04-x64
+  kubernetes_version:
+    - v1.23.6+rke2r2

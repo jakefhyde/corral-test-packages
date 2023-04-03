@@ -1,0 +1,14 @@
+name: k3s-downstream
+description: >
+  A single node k3s cluster.
+variables:
+  downstream_kubernetes_version:
+    type: string
+  downstream_kubeconfig:
+    type: string
+    readOnly: true
+    description: "Kubeconfig for the cluster encoded as a base64 string."
+commands:
+  - command: "/opt/corral/k3s-downstream/init-cluster.sh"
+    node_pools:
+      - downstream

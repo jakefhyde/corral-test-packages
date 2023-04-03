@@ -1,0 +1,60 @@
+name: do-cluster-nodes
+description: |
+  Creates droplets in Digital Ocean with a few basic dns entries.
+variables:
+  kubernetes_version:
+    type: string
+  kubeconfig:
+    type: string
+    readOnly: true
+    description: "Kubeconfig for the cluster encoded as a base64 string."
+  digitalocean_token:
+    sensitive: true
+    type: string
+    optional: false
+    description: "A Digitalocean API token with write permission. https://docs.digitalocean.com/reference/api/create-personal-access-token/"
+  digitalocean_domain:
+    sensitive: true
+    type: string
+    optional: false
+    description: "The domain to use for the Corral url."
+  fqdn:
+    type: string
+    readOnly: true
+    description: "Public DNS A record that directs to the bastion node."
+  image:
+    type: string
+    description: "What image to use for droplet operating systems. https://slugs.do-api.dev/"
+  size:
+    type: string
+    optional: true
+    default: "s-1vcpu-2gb"
+    description: "What size droplet to use for the nodes. https://slugs.do-api.dev/"
+commands:
+  - module: pools
+  - command: "echo \"$CORRAL_corral_user_public_key\" >> /$(whoami)/.ssh/authorized_keys"
+    node_pools:
+      - local
+      - downstream
+  - command: "echo \"$CORRAL_corral_private_key\" >> ~/.ssh/id_rsa"
+    node_pools:
+      - local
+  - command: /opt/corral/digitalocean/wait-for-cloud-init.sh
+    node_pools:
+      - local
+      - downstream
+  - command: /opt/corral/k3s/init-cluster.sh
+    node_pools:
+      - local
+  - command: /opt/corral/rancher/preflight.sh
+    node_pools:
+      - local
+  - command: /opt/corral/rancher/install-cert-manager.sh
+    node_pools:
+      - local
+  - command: /opt/corral/rancher/install-rancher.sh
+    node_pools:
+      - local
+  - command: /opt/corral/rancher/wait-for-password.sh
+    node_pools:
+      - local

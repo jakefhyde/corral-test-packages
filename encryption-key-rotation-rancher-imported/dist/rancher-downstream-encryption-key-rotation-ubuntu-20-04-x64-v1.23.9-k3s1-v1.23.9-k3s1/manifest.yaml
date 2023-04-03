@@ -1,0 +1,94 @@
+name: rancher-downstream-encryption-key-rotation-ubuntu-20-04-x64-v1.23.9-k3s1-v1.23.9-k3s1
+description: |-
+    Creates droplets in Digital Ocean with a few basic dns entries.
+
+    A single node k3s cluster.
+
+    A single node rke2 cluster.
+
+
+    image is pinned to ubuntu-20-04-x64.
+
+    kubernetes_version is pinned to v1.23.9+k3s1.
+
+    downstream_kubernetes_version is pinned to v1.23.9+k3s1.
+commands:
+    - module: rancher-downstream-encryption-key-rotation/do-cluster-nodes/pools
+    - command: echo "$CORRAL_corral_user_public_key" >> /$(whoami)/.ssh/authorized_keys
+      node_pools:
+        - local
+        - downstream
+    - command: echo "$CORRAL_corral_private_key" >> ~/.ssh/id_rsa
+      node_pools:
+        - local
+    - command: /opt/corral/digitalocean/wait-for-cloud-init.sh
+      node_pools:
+        - local
+        - downstream
+    - command: /opt/corral/k3s/init-cluster.sh
+      node_pools:
+        - local
+    - command: /opt/corral/rancher/preflight.sh
+      node_pools:
+        - local
+    - command: /opt/corral/rancher/install-cert-manager.sh
+      node_pools:
+        - local
+    - command: /opt/corral/rancher/install-rancher.sh
+      node_pools:
+        - local
+    - command: /opt/corral/rancher/wait-for-password.sh
+      node_pools:
+        - local
+    - command: /opt/corral/k3s-downstream/init-cluster.sh
+      node_pools:
+        - downstream
+    - command: /opt/corral/rke2/create-secrets.sh
+      node_pools:
+        - downstream
+    - command: /opt/corral/rke2/secrets_encrypt.sh rke2 rke2-server prepare prepare
+      node_pools:
+        - downstream
+    - command: /opt/corral/rke2/secrets_encrypt.sh rke2 rke2-server rotate rotate
+      node_pools:
+        - downstream
+    - command: /opt/corral/rke2/secrets_encrypt.sh rke2 rke2-server reencrypt reencrypt_finished
+      node_pools:
+        - downstream
+variables:
+    digitalocean_domain:
+        description: The domain to use for the Corral url.
+        optional: false
+        sensitive: true
+        type: string
+    digitalocean_token:
+        description: A Digitalocean API token with write permission. https://docs.digitalocean.com/reference/api/create-personal-access-token/
+        optional: false
+        sensitive: true
+        type: string
+    downstream_kubeconfig:
+        description: Kubeconfig for the cluster encoded as a base64 string.
+        readOnly: true
+        type: string
+    downstream_kubernetes_version:
+        default: v1.23.9+k3s1
+        readOnly: true
+    fqdn:
+        description: Public DNS A record that directs to the bastion node.
+        readOnly: true
+        type: string
+    image:
+        default: ubuntu-20-04-x64
+        readOnly: true
+    kubeconfig:
+        description: Kubeconfig for the cluster encoded as a base64 string.
+        readOnly: true
+        type: string
+    kubernetes_version:
+        default: v1.23.9+k3s1
+        readOnly: true
+    size:
+        default: s-1vcpu-2gb
+        description: What size droplet to use for the nodes. https://slugs.do-api.dev/
+        optional: true
+        type: string

@@ -1,0 +1,18 @@
+manifest:
+  name: encryption-key-rotation-test
+  description: |
+   Repro setup for encryption key rotation bugs
+  variables:
+    server_count:
+      default: 1
+templates:
+  - rancher
+  - downstream
+  - encryption-key-rotation
+variables:
+  image:
+    - ubuntu-20-04-x64
+  kubernetes_version:
+    - v1.23.9+k3s1
+  downstream_kubernetes_version:
+    - v1.23.9+k3s1

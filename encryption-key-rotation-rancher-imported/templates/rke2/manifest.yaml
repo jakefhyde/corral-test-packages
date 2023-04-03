@@ -1,0 +1,17 @@
+name: rke2
+description: >
+  A single node rke2 cluster.
+variables:
+  kubernetes_version:
+    type: string
+  kubeconfig:
+    type: string
+    readOnly: true
+    description: "Kubeconfig for the cluster encoded as a base64 string."
+commands:
+  - command: "/opt/corral/rke2/init-cluster.sh"
+    node_pools:
+      - local
+  - command: "/opt/corral/rke2/init-server.sh"
+    node_pools:
+      - local
